@@ -19,22 +19,21 @@ class SQLObject
       # sets class instance variable
       @columns = mini_table.first.map(&:to_sym)
     end
-
     @columns
   end
 
   def self.finalize!
-    @attributes = {}
-    @columns.each do |column|
+
+    columns.each do |column|
       columns.each do |column|
         # define getter
         define_method(column) do
-          @attributes[column]
+          attributes[column]
         end
 
         # define setter
         define_method("#{column}=") do |new_val|
-          @attributes[column] = new_val
+          attributes[column] = new_val
         end
       end
     end
@@ -65,7 +64,13 @@ class SQLObject
   end
 
   def initialize(params = {})
-
+    # debugger
+    unless params.empty?
+      self.class.columns.each do |column|
+        raise "unknown attribute '#{column}'" if params[column].nil?
+      end
+      @attributes = params
+    end
   end
 
   def attributes
