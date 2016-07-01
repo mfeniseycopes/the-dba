@@ -52,11 +52,19 @@ class SQLObject
   end
 
   def self.all
-    # ...
+
+    results = DBConnection.execute(<<-SQL)
+      SELECT
+        *
+      FROM
+        #{table_name}
+    SQL
+
+    parse_all(results)
   end
 
   def self.parse_all(results)
-    # ...
+    results.map { |row_hash| self.new(row_hash) }
   end
 
   def self.find(id)
@@ -69,13 +77,13 @@ class SQLObject
     # debugger
     unless params.empty?
       params.each do |attr_name, value|
-        # debugger
-        if my_class.columns.include?(attr_name)
-          # debugger
-          self.send("#{attr_name}=", params[attr_name])
+
+        if my_class.columns.include?(attr_name.to_sym)
+          self.send("#{attr_name.to_s}=", params[attr_name])
         else
           raise "unknown attribute '#{attr_name}'"
         end
+
       end
     end
   end
