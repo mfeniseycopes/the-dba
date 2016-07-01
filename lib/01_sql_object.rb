@@ -6,6 +6,7 @@ require 'byebug'
 
 class SQLObject
 
+
   def self.columns
     if @columns.nil?
       # execute2 returns first row as column headers
@@ -68,19 +69,30 @@ class SQLObject
   end
 
   def self.find(id)
-    # ...
+    # gets row w/ corresponding id
+    results = DBConnection.execute(<<-SQL, id)
+      SELECT
+        *
+      FROM
+        #{table_name}
+      WHERE
+        id = ?
+    SQL
+
+    # returns nil if no results
+    results.empty? ? nil : self.new(results.first)
   end
 
 
 
   def initialize(params = {})
-    # debugger
     unless params.empty?
       params.each do |attr_name, value|
 
-        if my_class.columns.include?(attr_name.to_sym)
+        if class_obj.columns.include?(attr_name.to_sym)
           self.send("#{attr_name.to_s}=", params[attr_name])
         else
+          # debugger
           raise "unknown attribute '#{attr_name}'"
         end
 
@@ -93,22 +105,55 @@ class SQLObject
   end
 
   def attribute_values
-    # ...
+    attributes.values
   end
+
+
 
   def insert
-    # ...
+
+    DBConnection.execute2(<<-SQL, attribute_values)
+      INSERT INTO
+        #{class_obj.table_name} #{sql_columns}
+      VALUES
+        #{sql_question_marks}
+    SQL
+
+    self.id = DBConnection.last_insert_row_id
   end
 
-  def my_class
+  def class_obj
     self.class
   end
 
   def update
-    # ...
+
+    DBConnection.execute2(<<-SQL, attribute_values)
+      UPDATE
+        #{class_obj.table_name}
+      SET
+        #{sql_update_set}
+      WHERE
+        id = #{self.id}
+    SQL
+
   end
 
   def save
-    # ...
+    id.nil? ? insert : update
+  end
+
+  def sql_columns
+    "(#{attributes.keys.join(", ")})"
+  end
+
+  def sql_update_set
+    attributes.keys.map { |attr_name| "#{attr_name} = ?" }
+    .join(", ")
+  end
+
+  def sql_question_marks
+    marks = ["?"] * attributes.length
+    "(#{marks.join(", ")})"
   end
 end
