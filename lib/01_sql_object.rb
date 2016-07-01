@@ -63,13 +63,20 @@ class SQLObject
     # ...
   end
 
+
+
   def initialize(params = {})
     # debugger
     unless params.empty?
-      self.class.columns.each do |column|
-        raise "unknown attribute '#{column}'" if params[column].nil?
+      params.each do |attr_name, value|
+        # debugger
+        if my_class.columns.include?(attr_name)
+          # debugger
+          self.send("#{attr_name}=", params[attr_name])
+        else
+          raise "unknown attribute '#{attr_name}'"
+        end
       end
-      @attributes = params
     end
   end
 
@@ -83,6 +90,10 @@ class SQLObject
 
   def insert
     # ...
+  end
+
+  def my_class
+    self.class
   end
 
   def update
