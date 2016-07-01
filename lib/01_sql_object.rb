@@ -6,6 +6,18 @@ require 'byebug'
 
 class SQLObject
 
+  def self.all
+
+    results = DBConnection.execute(<<-SQL)
+    SELECT
+      *
+    FROM
+      #{table_name}
+    SQL
+
+    parse_all(results)
+  end
+
 
   def self.columns
     if @columns.nil?
@@ -23,26 +35,74 @@ class SQLObject
     @columns
   end
 
+
   def self.finalize!
 
     columns.each do |column|
-      columns.each do |column|
-        # define getter
-        define_method(column) do
-          attributes[column]
-        end
+      # define getter
+      define_method(column) do
+        attributes[column]
+      end
 
-        # define setter
-        define_method("#{column}=") do |new_val|
-          attributes[column] = new_val
-        end
+      # define setter
+      define_method("#{column}=") do |new_val|
+        attributes[column] = new_val
       end
     end
   end
 
-  def self.table_name=(table_name = nil)
-    @table_name = table_name
+
+  def self.find(id)
+    # gets row w/ corresponding id
+    results = DBConnection.execute(<<-SQL, id)
+    SELECT
+      *
+    FROM
+      #{table_name}
+    WHERE
+      id = ?
+    SQL
+
+    # returns nil if no results
+    results.empty? ? nil : self.new(results.first)
   end
+
+
+  def self.first
+
+    results = DBConnection.execute(<<-SQL)
+    SELECT
+      *
+    FROM
+      #{table_name}
+    LIMIT
+      1
+    SQL
+
+    results.empty? ? nil : self.new(results.first)
+  end
+
+
+  def self.last
+
+    results = DBConnection.execute(<<-SQL)
+    SELECT
+      *
+    FROM
+      #{table_name}
+    ORDER BY id DESC
+    LIMIT
+      1
+    SQL
+
+    results.empty? ? nil : self.new(results.first)
+  end
+
+
+  def self.parse_all(results)
+    results.map { |row_hash| self.new(row_hash) }
+  end
+
 
   def self.table_name
     if @table_name.nil?
@@ -52,37 +112,10 @@ class SQLObject
     @table_name
   end
 
-  def self.all
 
-    results = DBConnection.execute(<<-SQL)
-      SELECT
-        *
-      FROM
-        #{table_name}
-    SQL
-
-    parse_all(results)
+  def self.table_name=(table_name = nil)
+    @table_name = table_name
   end
-
-  def self.parse_all(results)
-    results.map { |row_hash| self.new(row_hash) }
-  end
-
-  def self.find(id)
-    # gets row w/ corresponding id
-    results = DBConnection.execute(<<-SQL, id)
-      SELECT
-        *
-      FROM
-        #{table_name}
-      WHERE
-        id = ?
-    SQL
-
-    # returns nil if no results
-    results.empty? ? nil : self.new(results.first)
-  end
-
 
 
   def initialize(params = {})
@@ -100,14 +133,15 @@ class SQLObject
     end
   end
 
+
   def attributes
     @attributes ||= {}
   end
 
+
   def attribute_values
     attributes.values
   end
-
 
 
   def insert
@@ -122,38 +156,45 @@ class SQLObject
     self.id = DBConnection.last_insert_row_id
   end
 
+
   def class_obj
     self.class
   end
 
-  def update
-
-    DBConnection.execute2(<<-SQL, attribute_values)
-      UPDATE
-        #{class_obj.table_name}
-      SET
-        #{sql_update_set}
-      WHERE
-        id = #{self.id}
-    SQL
-
-  end
 
   def save
     id.nil? ? insert : update
   end
 
+
   def sql_columns
     "(#{attributes.keys.join(", ")})"
   end
+
 
   def sql_update_set
     attributes.keys.map { |attr_name| "#{attr_name} = ?" }
     .join(", ")
   end
 
+
   def sql_question_marks
     marks = ["?"] * attributes.length
     "(#{marks.join(", ")})"
   end
+
+
+  def update
+
+    DBConnection.execute2(<<-SQL, attribute_values)
+    UPDATE
+    #{class_obj.table_name}
+    SET
+    #{sql_update_set}
+    WHERE
+    id = #{self.id}
+    SQL
+
+  end
+
 end
