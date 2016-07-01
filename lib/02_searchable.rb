@@ -4,7 +4,7 @@ require_relative '01_sql_object'
 module Searchable
 
   def parse_all
-    unless self.methods.include?(:parse_all)
+    unless self.response_to?(:parse_all)
       raise "Must implement parse_all(results) method in calling class"
     end
   end
@@ -26,7 +26,7 @@ module Searchable
     WHERE
     #{sql_criteria(params.keys)}
     SQL
-
+    
     parse_all(results)
   end
 end
