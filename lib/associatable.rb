@@ -61,7 +61,7 @@ class HasManyOptions < AssocOptions
 end
 
 module Associatable
-  
+
   def assoc_options
     @assoc_options ||= {}
     @assoc_options
@@ -97,9 +97,4 @@ module Associatable
 
   end
 
-end
-
-
-class SQLObject
-  extend Associatable
 end
