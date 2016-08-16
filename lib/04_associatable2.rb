@@ -5,6 +5,12 @@ module Associatable
   # Remember to go back to 04_associatable to write ::assoc_options
 
   def has_one_through(name, through_name, source_name)
-    # ...
+
+    self.send(:define_method, name) do
+      thru_association = self.class.assoc_options[through_name]
+
+      self.send(through_name).send(source_name)
+    end
+
   end
 end

@@ -73,6 +73,8 @@ module Associatable
     self.send(:define_method, name) do
       association.model_class.where(association.primary_key => self.send(association.foreign_key)).first
     end
+
+    self.assoc_options[name] = association
   end
 
   def has_many(name, options = {})
@@ -81,10 +83,13 @@ module Associatable
     self.send(:define_method, name) do
       association.model_class.where(association.foreign_key => self.send(association.primary_key))
     end
+
+    self.assoc_options[name] = association
   end
 
   def assoc_options
-    # Wait to implement this in Phase IVa. Modify `belongs_to`, too.
+    @assoc_options ||= {}
+    @assoc_options
   end
 
 end
