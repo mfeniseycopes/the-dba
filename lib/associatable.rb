@@ -1,10 +1,6 @@
-require_relative '02_searchable'
+require_relative 'searchable'
 require 'active_support/inflector'
 
-
-
-
-# Phase IIIa
 class AssocOptions
 
   def initialize(name, custom_options = {})
@@ -65,7 +61,11 @@ class HasManyOptions < AssocOptions
 end
 
 module Associatable
-  # Phase IIIb
+  
+  def assoc_options
+    @assoc_options ||= {}
+    @assoc_options
+  end
 
   def belongs_to(name, options = {})
     association = BelongsToOptions.new(name, options)
@@ -87,9 +87,14 @@ module Associatable
     self.assoc_options[name] = association
   end
 
-  def assoc_options
-    @assoc_options ||= {}
-    @assoc_options
+  def has_one_through(name, through_name, source_name)
+
+    self.send(:define_method, name) do
+      thru_association = self.class.assoc_options[through_name]
+
+      self.send(through_name).send(source_name)
+    end
+
   end
 
 end

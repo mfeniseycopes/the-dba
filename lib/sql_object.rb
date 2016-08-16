@@ -1,10 +1,13 @@
 require_relative 'db_connection'
 require 'active_support/inflector'
 require 'byebug'
-# NB: the attr_accessor we wrote in phase 0 is NOT used in the rest
-# of this project. It was only a warm up.
+
+require_relative 'associatable'
+require_relative 'searchable'
 
 class SQLObject
+
+  extend Associatable, Searchable
 
   def self.all
 
