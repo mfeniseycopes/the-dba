@@ -16,7 +16,6 @@ module Searchable
 
 
   def where(params)
-    #  debugger
     results = DBConnection.execute(<<-SQL, params.values)
     SELECT
     *

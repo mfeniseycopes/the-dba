@@ -128,7 +128,6 @@ class SQLObject
         if class_obj.columns.include?(attr_name.to_sym)
           self.send("#{attr_name.to_s}=", params[attr_name])
         else
-          # debugger
           raise "unknown attribute '#{attr_name}'"
         end
 
