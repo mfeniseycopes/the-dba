@@ -1,9 +1,18 @@
 require_relative 'searchable'
 require 'active_support/inflector'
 
+# base AssocOptions class
 class AssocOptions
 
+  attr_accessor(
+    :foreign_key,
+    :class_name,
+    :primary_key
+  )
+
+  # create new AssocOptions instance with name and options
   def initialize(name, custom_options = {})
+    # custom_options need not define all options
     options = defaults(name)
     options.merge!(custom_options) if custom_options.is_a?(Hash)
 
@@ -12,26 +21,14 @@ class AssocOptions
     end
   end
 
-  attr_accessor(
-    :foreign_key,
-    :class_name,
-    :primary_key
-  )
-
+  # provides access to the class attributes, methods
   def model_class
     class_name.constantize
   end
 
-  def table_name
-    begin
-      model_class.table_name
-    rescue NoMethodError => e
-      raise "#{model_class} must implement 'table_name' method definition"
-    end
-  end
-
 end
 
+# creates belongs_to association options
 class BelongsToOptions < AssocOptions
 
   def defaults(name)
@@ -42,6 +39,7 @@ class BelongsToOptions < AssocOptions
 
 end
 
+# creates has_many association options
 class HasManyOptions < AssocOptions
 
   def initialize(name, klass, custom_options = {})
@@ -60,13 +58,10 @@ class HasManyOptions < AssocOptions
   end
 end
 
+# creates association instance methods
 module Associatable
 
-  def assoc_options
-    @assoc_options ||= {}
-    @assoc_options
-  end
-
+  # creates an instance method on the class by the same name as the provided association name, returns instance matching association
   def belongs_to(name, options = {})
     association = BelongsToOptions.new(name, options)
 
@@ -77,6 +72,7 @@ module Associatable
     self.assoc_options[name] = association
   end
 
+  # creates an instance method on the class by the same name as the provided association name, returns instance of all matching associations
   def has_many(name, options = {})
     association = HasManyOptions.new(name, self.to_s.singularize, options)
 
@@ -87,11 +83,10 @@ module Associatable
     self.assoc_options[name] = association
   end
 
+  # creates an instance method on the class by the same name as the provided association name, returns instance matching through association
   def has_one_through(name, through_name, source_name)
 
     self.send(:define_method, name) do
-      thru_association = self.class.assoc_options[through_name]
-
       self.send(through_name).send(source_name)
     end
 
