@@ -14,9 +14,9 @@ class AssocOptions
   end
 
   attr_accessor(
-  :foreign_key,
-  :class_name,
-  :primary_key
+    :foreign_key,
+    :class_name,
+    :primary_key
   )
 
   def model_class
@@ -55,7 +55,7 @@ class HasManyOptions < AssocOptions
   end
 
   def defaults(name, klass)
-    { class_name: name.camelcase,
+    { class_name: name.camelcase.singularize,
       foreign_key: "#{klass.downcase}_id".to_sym,
       primary_key: :id }
   end
