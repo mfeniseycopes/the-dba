@@ -1,6 +1,9 @@
 require_relative '02_searchable'
 require 'active_support/inflector'
 
+
+
+
 # Phase IIIa
 class AssocOptions
 
@@ -36,7 +39,7 @@ end
 class BelongsToOptions < AssocOptions
 
   def defaults(name)
-    { class_name: name.camelcase,
+    { class_name: name.to_s.camelcase,
       foreign_key: "#{name}_id".to_sym,
       primary_key: :id }
   end
@@ -55,7 +58,7 @@ class HasManyOptions < AssocOptions
   end
 
   def defaults(name, klass)
-    { class_name: name.camelcase.singularize,
+    { class_name: name.to_s.camelcase.singularize,
       foreign_key: "#{klass.downcase}_id".to_sym,
       primary_key: :id }
   end
@@ -66,20 +69,27 @@ module Associatable
 
   def belongs_to(name, options = {})
     association = BelongsToOptions.new(name, options)
-    owner = association.model_class
-            .send(association.foreign_key)
-            .where(association.primary_key = self.id)
+
+    self.send(:define_method, name) do
+      association.model_class.where(association.primary_key => self.send(association.foreign_key)).first
+    end
   end
 
   def has_many(name, options = {})
-    # ...
+    association = HasManyOptions.new(name, self.to_s.singularize, options)
+
+    self.send(:define_method, name) do
+      association.model_class.where(association.foreign_key => self.send(association.primary_key))
+    end
   end
 
   def assoc_options
     # Wait to implement this in Phase IVa. Modify `belongs_to`, too.
   end
+
 end
 
+
 class SQLObject
-  include Associatable
+  extend Associatable
 end
