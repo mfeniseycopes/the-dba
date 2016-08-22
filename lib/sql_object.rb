@@ -122,7 +122,7 @@ class SQLObject
     @table_name = table_name
   end
 
-  # initialize an instance with mass assignment
+  # initialize an instance with dynamic mass assignment
   def initialize(params = {})
     unless params.empty?
       params.each do |attr_name, value|

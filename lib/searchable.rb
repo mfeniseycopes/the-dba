@@ -4,7 +4,7 @@ module Searchable
 
   # ensures that class extending the module implements parse_all
   def parse_all
-    unless self.response_to?(:parse_all)
+    unless self.respond_to?(:parse_all)
       raise "Must implement parse_all(results) method in calling class"
     end
   end

@@ -1,21 +1,60 @@
-# `the-dba`
+# the-dba
 
-`the-dba` (previously known as The Database Abtractor or TaDBitAwesome) is an ORM (Object Relation Mapping Tool) that is intended to abstract away the database implementation (namely SQL).
+the-dba is an ORM (Object Relation Mapping Tool) that is intended to abstract away the database implementation (namely SQL).
 
-TaDBitAwesome uses SQL queries tucked nicely away into class methods to provide typical SQL statement functionality. Creating a class which extends the SQLObject class provides an abstract 'table' which to apply associations and perform CRUD on.
+the-dba uses SQL queries tucked nicely away into class methods to provide typical SQL statement functionality. Creating a class which extends the SQLObject class provides an abstract 'table' which to apply associations and perform CRUD on.
 
 `the-dba` is inspired by RoR's ActiveRecord.
 
 ## SQLObject
 
-To create a working SQLObject class it is necessary to extend the `SQLObject` class and set the table_name. `SQLObject` is smart enough to get it's own column names.
+To create a working SQLObject class it is necessary to extend the `SQLObject` class and set the table_name. `SQLObject` queries the database to gather the column names dynamically from the column headers in a query result.
 
-```
+```ruby
 class Stembolt < SQLObject
   self.table_name = "stembolts"
 end
 # that's it!
 ```
+
+Column names are made available as getter/setter methods by using `define_method`:
+
+```ruby
+# uses `define_method` to create attribute getter/setter methods for class instances
+def self.finalize!
+
+  columns.each do |column|
+    # define getter
+    define_method(column) do
+      attributes[column]
+    end
+
+    # define setter
+    define_method("#{column}=") do |new_val|
+      attributes[column] = new_val
+    end
+  end
+end
+```
+
+Instances of SQLObject can be initialized with mass assignment via `Object#send` method:
+
+```ruby
+def initialize(params = {})
+  unless params.empty?
+    params.each do |attr_name, value|
+
+      if class_obj.columns.include?(attr_name.to_sym)
+        self.send("#{attr_name.to_s}=", params[attr_name])
+      else
+        raise "unknown attribute '#{attr_name}'"
+      end
+
+    end
+  end
+end
+```
+
 
 From here we have access to the following `the-dba` methods:
 
@@ -34,7 +73,7 @@ By extending the `Searchable` module into the SQLObject class we add even more a
 
 Additional methods:
 
-* `::where` - takes hash of key/value pairs st key is a table column name and value is the record value. Returns array of SQLObject instances.
+* `::where` - takes hash of key/value pairs such that key is a table column name and value is the record value. Returns array of SQLObject instances.
 
 ## Associatable
 
