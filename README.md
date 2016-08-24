@@ -2,9 +2,26 @@
 
 the-dba is an ORM (Object Relation Mapping Tool) that is intended to abstract away the database implementation (namely SQL).
 
-the-dba uses SQL queries tucked nicely away into class methods to provide typical SQL statement functionality. Creating a class which extends the SQLObject class provides an abstract 'table' which to apply associations and perform CRUD on.
+the-dba uses SQL queries tucked nicely away into class methods to provide typical SQL statement functionality. Creating a class which extends the SQLObject class provides an abstract 'table' to apply associations and perform CRUD on.
 
 `the-dba` is inspired by RoR's ActiveRecord.
+
+## How to Use
+
+Including the-dba is as easy (well almost) as extending the SQLObject class.
+
+
+1. Clone the repo into your working directory.
+  - `$ git clone http://github.com/mfeniseycopes/the-dba.git`
+2. Setup db connection.
+  - The simplest way to do this is to import your own `*.db` & `*.sql` files and rename them `stembolts.db` & `stembolts.sql`.
+  - Otherwise you will need to change the references to `stembolts.db` & `stembolts.sql` to whatever filenames you are using.
+3. Create a new class by extending `SQLObject`.
+4. Make sure to set the table name within your new class before initializing any instances.
+  - `self.table_name = "<your db table name>"`
+5. Create up some associations. Chances are you don't have a single table, so try adding some associations between your foreign and primary keys.
+6. Play!
+
 
 ## SQLObject
 
@@ -17,7 +34,27 @@ end
 # that's it!
 ```
 
-Column names are made available as getter/setter methods by using `define_method`:
+Columns names retrieved via db query utilizing table headers as default table names:
+```ruby
+# sets list of all table columns on class, returns
+def self.columns
+  if @columns.nil?
+    # execute2 returns first row as column headers
+    mini_table = DBConnection.execute2(<<-SQL)
+      SELECT
+        *
+      FROM
+        #{table_name}
+      LIMIT 1
+    SQL
+    # sets class instance variable
+    @columns = mini_table.first.map(&:to_sym)
+  end
+  @columns
+end
+```
+
+Inheriting from `SQLObject` class provides handy getter/setter methods for each column. These are added to the class by implementing `define_method` with the dynamically retrieved table names:
 
 ```ruby
 # uses `define_method` to create attribute getter/setter methods for class instances
@@ -83,4 +120,4 @@ Additional methods:
 
 * `::belongs_to` - takes an association name and an optional options hash detailing the primary_key, foreign_key and class name which the relationship is applied.
 * `::has_many` - takes an association name and an optional options hash detailing the primary_key, foreign_key and class name which the relationship is applied.
-* `::has_one_through` - takes an association name and an optional options hash detailing the primary_key, foreign_key and class name which the relationship is applied.
+* `::has_one_through` - takes an association name and an options hash detailing the association providing the through association and the name of that through association.
