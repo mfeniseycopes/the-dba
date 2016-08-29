@@ -10,17 +10,24 @@ the-dba uses SQL queries tucked nicely away into class methods to provide typica
 
 Including the-dba is as easy (well almost) as extending the SQLObject class.
 
+Prerequisites: MySQL, Ruby and `bundler` gem installed
 
 1. Clone the repo into your working directory.
   - `$ git clone http://github.com/mfeniseycopes/the-dba.git`
-2. Setup db connection.
+2. Install dependencies. 
+
+```
+  $ cd the-dba
+  $ bundle install
+```
+3. Setup db connection.
   - The simplest way to do this is to import your own `*.db` & `*.sql` files and rename them `stembolts.db` & `stembolts.sql`.
   - Otherwise you will need to change the references to `stembolts.db` & `stembolts.sql` to whatever filenames you are using.
-3. Create a new class by extending `SQLObject`.
-4. Make sure to set the table name within your new class before initializing any instances.
+4. Create a new class by extending `SQLObject`.
+5. Make sure to set the table name within your new class before initializing any instances.
   - `self.table_name = "<your db table name>"`
-5. Build associations. Assuming you don't have a single table, so try adding some associations between your foreign and primary keys.
-6. Play!
+6. Build associations. Assuming you don't have a single table, so try adding some associations between your foreign and primary keys.
+7. Play!
 
 *See example below or try running the code in `demo.rb`*
 
