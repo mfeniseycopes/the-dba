@@ -19,8 +19,10 @@ Including the-dba is as easy (well almost) as extending the SQLObject class.
 3. Create a new class by extending `SQLObject`.
 4. Make sure to set the table name within your new class before initializing any instances.
   - `self.table_name = "<your db table name>"`
-5. Create up some associations. Chances are you don't have a single table, so try adding some associations between your foreign and primary keys.
+5. Build associations. Assuming you don't have a single table, so try adding some associations between your foreign and primary keys.
 6. Play!
+
+*See example below or try running the code in `demo.rb`*
 
 
 ## SQLObject
@@ -30,6 +32,7 @@ To create a working SQLObject class it is necessary to extend the `SQLObject` cl
 ```ruby
 class Stembolt < SQLObject
   self.table_name = "stembolts"
+  finalize!
 end
 # that's it!
 ```
@@ -121,3 +124,64 @@ Additional methods:
 * `::belongs_to` - takes an association name and an optional options hash detailing the primary_key, foreign_key and class name which the relationship is applied.
 * `::has_many` - takes an association name and an optional options hash detailing the primary_key, foreign_key and class name which the relationship is applied.
 * `::has_one_through` - takes an association name and an options hash detailing the association providing the through association and the name of that through association.
+
+## An example
+
+```ruby
+require_relative "lib/sql_object"
+
+class Stembolt < SQLObject
+  table_name = "stembolts"
+  finalize!
+
+  belongs_to :officer
+  has_one_through :ship, :officer, :ship
+end
+
+class Officer < SQLObject
+  table_name = "officers"
+  finalize!
+
+  belongs_to :ship
+  has_many :stembolts
+end
+
+class Ship < SQLObject
+  table_name = "ships"
+  finalize!
+
+  has_many :officers
+end
+
+Stembolt.all
+# => [#<Stembolt:0x0055d09707ab80
+#     @attributes={:id=>1, :color=>"Blue", :officer_id=>1}>,
+#  #<Stembolt:0x0055d09707a978
+#     @attributes={:id=>2, :color=>"Green", :officer_id=>2}>,
+#  #<Stembolt:0x0055d09707a838
+#     @attributes={:id=>3, :color=>"Grey", :officer_id=>2}>,
+#  #<Stembolt:0x0055d09707a568
+#     @attributes={:id=>4, :color=>"Yellow", :officer_id=>2}>]
+
+Officer.first
+# => #<Officer:0x0055d096ccbc50
+# @attributes={:id=>1, :name=>"Geordi Laforge", :ship_id=>1}>
+
+Officer.first.ship
+# => #<Ship:0x0055d0977ba648 @attributes={:id=>1, :name=>"Enterprise"}>
+
+# find a ship
+enterprise = Ship.where(name: "Enterprise").first
+
+# create new officer instance
+spock = Officer.new(name: "Spock", ship_id: enterprise.id)
+
+# insert into db
+spock.insert
+
+# change attribute
+spock.name = "Mr. Spock"
+
+# update db record
+spock.save
+```

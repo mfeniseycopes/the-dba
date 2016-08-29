@@ -63,24 +63,48 @@ module Associatable
 
   # creates an instance method on the class by the same name as the provided association name, returns instance matching association
   def belongs_to(name, options = {})
-    association = BelongsToOptions.new(name, options)
+    # association = BelongsToOptions.new(name, options)
+    #
+    # self.send(:define_method, name) do
+    #   association.model_class.where(association.primary_key => self.send(association.foreign_key)).first
+    # end
+    #
+    # self.assoc_options[name] = association
 
-    self.send(:define_method, name) do
-      association.model_class.where(association.primary_key => self.send(association.foreign_key)).first
+    self.assoc_options[name] = BelongsToOptions.new(name, options)
+
+    define_method(name) do
+      options = self.class.assoc_options[name]
+
+      key_val = self.send(options.foreign_key)
+      options
+        .model_class
+        .where(options.primary_key => key_val)
+        .first
     end
-
-    self.assoc_options[name] = association
   end
 
   # creates an instance method on the class by the same name as the provided association name, returns instance of all matching associations
   def has_many(name, options = {})
-    association = HasManyOptions.new(name, self.to_s.singularize, options)
+    # association = HasManyOptions.new(name, self.to_s.singularize, options)
+    #
+    # self.send(:define_method, name) do
+    #   association.model_class.where(association.foreign_key => self.send(association.primary_key))
+    # end
+    #
+    # self.assoc_options[name] = association
 
-    self.send(:define_method, name) do
-      association.model_class.where(association.foreign_key => self.send(association.primary_key))
+    self.assoc_options[name] =
+      HasManyOptions.new(name, self.name, options)
+
+    define_method(name) do
+      options = self.class.assoc_options[name]
+
+      key_val = self.send(options.primary_key)
+      options
+        .model_class
+        .where(options.foreign_key => key_val)
     end
-
-    self.assoc_options[name] = association
   end
 
   # creates an instance method on the class by the same name as the provided association name, returns instance matching through association
@@ -90,6 +114,12 @@ module Associatable
       self.send(through_name).send(source_name)
     end
 
+  end
+
+  def assoc_options
+    # Wait to implement this in Phase IVa. Modify `belongs_to`, too.
+    @assoc_options ||= {}
+    @assoc_options
   end
 
 end
