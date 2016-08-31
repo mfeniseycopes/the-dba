@@ -7,9 +7,12 @@ the-dba uses SQL queries tucked nicely away into class methods to provide typica
 `the-dba` is inspired by RoR's ActiveRecord.
 
 ## How to Use
+Here is some example code and set-up instructions. 
 
 ### An Example 
 The following code walks you through using the-dba with the provided sample database. See ['Running the-dba'](#running) for complete steps to use with your own database.
+
+*Try example below or run the code in `demo.rb`*
 
 ```ruby
 require_relative "lib/sql_object"
@@ -92,8 +95,6 @@ Prerequisites: MySQL, Ruby and `bundler` gem installed
   - `self.table_name = "<your db table name>"`
 6. Build associations. Assuming you don't have a single table, so try adding some associations between your foreign and primary keys.
 7. Play!
-
-*See example below or try running the code in `demo.rb`*
 
 
 ## SQLObject
