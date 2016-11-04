@@ -12,18 +12,18 @@ module Searchable
   # creates criteria string
   def sql_criteria(column_names)
     res = column_names.map { |column| "#{column} = ?"}
-    .join(" AND ")
+      .join(" AND ")
   end
 
   # returns array of all instances st. all params are equal
   def where(params)
     results = DBConnection.execute(<<-SQL, params.values)
-    SELECT
-    *
-    FROM
-    #{table_name}
-    WHERE
-    #{sql_criteria(params.keys)}
+      SELECT
+        *
+      FROM
+        #{table_name}
+      WHERE
+        #{sql_criteria(params.keys)}
     SQL
 
     parse_all(results)
