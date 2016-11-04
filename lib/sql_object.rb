@@ -14,10 +14,10 @@ class SQLObject
   def self.all
 
     results = DBConnection.execute(<<-SQL)
-    SELECT
-      *
-    FROM
-      #{table_name}
+      SELECT
+        *
+      FROM
+        #{table_name}
     SQL
 
     parse_all(results)
@@ -60,12 +60,12 @@ class SQLObject
   def self.find(id)
     # gets row w/ corresponding id
     results = DBConnection.execute(<<-SQL, id)
-    SELECT
-      *
-    FROM
-      #{table_name}
-    WHERE
-      id = ?
+      SELECT
+        *
+      FROM
+        #{table_name}
+      WHERE
+        id = ?
     SQL
 
     # returns nil if no results
@@ -76,12 +76,12 @@ class SQLObject
   def self.first
 
     results = DBConnection.execute(<<-SQL)
-    SELECT
-      *
-    FROM
-      #{table_name}
-    LIMIT
-      1
+      SELECT
+        *
+      FROM
+        #{table_name}
+      LIMIT
+        1
     SQL
 
     results.empty? ? nil : self.new(results.first)
@@ -91,13 +91,14 @@ class SQLObject
   def self.last
 
     results = DBConnection.execute(<<-SQL)
-    SELECT
-      *
-    FROM
-      #{table_name}
-    ORDER BY id DESC
-    LIMIT
-      1
+      SELECT
+        *
+      FROM
+        #{table_name}
+      ORDER BY 
+        id DESC
+      LIMIT
+        1
     SQL
 
     results.empty? ? nil : self.new(results.first)
@@ -175,12 +176,12 @@ class SQLObject
   def update
 
     DBConnection.execute2(<<-SQL, attribute_values)
-    UPDATE
-    #{class_obj.table_name}
-    SET
-    #{sql_update_set}
-    WHERE
-    id = #{self.id}
+      UPDATE
+        #{class_obj.table_name}
+      SET
+        #{sql_update_set}
+      WHERE
+        id = #{self.id}
     SQL
 
   end
@@ -194,7 +195,7 @@ class SQLObject
   # helper method to list all row values in SQL statements
   def sql_update_set
     attributes.keys.map { |attr_name| "#{attr_name} = ?" }
-    .join(", ")
+      .join(", ")
   end
 
   # helper method to fill in '?' for SQL interpolation
